@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
@@ -11,7 +11,9 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+
 import os
+current_year = datetime.now().year
 
 '''
 Make sure the required packages are installed: 
@@ -125,7 +127,7 @@ def register():
             flash("Email already registered. Please log in.")
             return redirect(url_for('login'))
     # If it's GET or form is not valid, render the registration form again
-    return render_template("register.html", form=form, logged_in=current_user.is_authenticated)
+    return render_template("register.html", form=form, logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 # TODO: Retrieve a user from the database based on their email. 
@@ -150,7 +152,7 @@ def login():
             flash('That password is incorrect')
             return redirect(url_for('login'), form=form)
 
-    return render_template("login.html", form=form, logged_in=current_user.is_authenticated)
+    return render_template("login.html", form=form, logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 @app.route('/logout')
@@ -164,7 +166,7 @@ def logout():
 def get_all_posts():
     #result = db.session.execute(db.select(BlogPost))
     posts = BlogPost.query.all() #result.scalars().all()
-    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated)
+    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 # TODO: Allow logged-in users to comment on posts
@@ -184,7 +186,7 @@ def show_post(post_id):
         db.session.commit()
         flash("Your comment has been added.")
         return redirect(url_for('show_post', post_id=post_id))  # Redirect to avoid resubmitting the form
-    return render_template("post.html", form=form, post=requested_post, all_comments=all_comments, logged_in=current_user.is_authenticated)
+    return render_template("post.html", form=form, post=requested_post, all_comments=all_comments, logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 # TODO: Use a decorator so only an admin user can create a new post
@@ -203,7 +205,7 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated)
+    return render_template("make-post.html", form=form, logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 # TODO: Use a decorator so only an admin user can edit a post
@@ -226,7 +228,7 @@ def edit_post(post_id):
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
-    return render_template("make-post.html", form=edit_form, is_edit=True, logged_in=current_user.is_authenticated)
+    return render_template("make-post.html", form=edit_form, is_edit=True, logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 # TODO: Use a decorator so only an admin user can delete a post
@@ -241,12 +243,12 @@ def delete_post(post_id):
 
 @app.route("/about")
 def about():
-    return render_template("about.html", logged_in=current_user.is_authenticated)
+    return render_template("about.html", logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html", logged_in=current_user.is_authenticated)
+    return render_template("contact.html", logged_in=current_user.is_authenticated, current_year=current_year)
 
 
 if __name__ == "__main__":
